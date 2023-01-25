@@ -1,0 +1,111 @@
+# site.yml
+---
+# Start Configuring ALL hosts
+- hosts: all
+  become: yes 
+  roles: []
+  tasks:
+
+  # Starts and enables firewalld service 
+  - name: Starting and enabling firewalld service
+    service:
+      name: "{{ item }}"
+      state: started
+      enabled: yes
+    become: yes
+    loop: 
+    - firewalld 
+
+  # Installs usefull software like vim, pip, etc.
+  - name: Installing Usefull Software 
+    ansible.builtin.dnf:
+      name: 
+      - vim
+      - python3-pip
+      - mkpasswd
+      state: latest
+      
+
+# Start Configuring Host 'db'
+- hosts: db
+  become: yes 
+  roles: []
+  tasks:
+    # Changes hostname to 'Alpha'
+    - name: Changing hostname to 'Alpha'
+      ansible.builtin.hostname: 
+        name: Alpha
+
+    # Opens port 3306 so that we can connect to the database using software like MySQL Workbench
+    - name: Open port 3306 for database connection
+      firewalld: 
+        port: 3306/tcp
+        permanent: true 
+        immediate: true 
+        state: enabled
+      become: true 
+
+    # Configures firewall to allow the mysql service
+    - name: Allow service mysql for database connection
+      firewalld:
+        permanent: yes 
+        immediate: yes
+        service: mysql 
+        state: enabled
+
+    # Installs the MariaDB service 
+    - name: Install Mariadb Service 
+      package: 
+        name: mariadb-server
+        state: present 
+    
+    # Makes sure MariaDB is running and it enabled
+    - name: Start and Enable MariaDB 
+      service: 
+        name: mariadb 
+        state: started
+        enabled: true 
+      
+    # Installs neccesary module for mariadb with pip 
+    - name: Install python-mysqldb using pip
+      ansible.builtin.pip: 
+        name: PyMySQL
+
+    # creates .my.cnf config file for root db user
+    - name: Create '/root/.my.cnf' for root db user
+      copy:
+        src: /vagrant/configfiles/.my.cnf
+        dest: /root/.my.cnf
+
+    # Configures a password for the root user
+    - name: Set the root password 
+      shell: mysql --init-command="alter user root@localhost identified by 'test123'";
+
+    # Creates a user 'jeff' that will be used to access the mariadb 
+    - name: Create new database user jeff
+      mysql_user:
+          name: jeff
+          password: test123
+          priv: '*.*:ALL,GRANT'
+          state: present
+          login_user: root
+          login_password: test123
+          host: "%"
+
+
+    
+
+
+
+
+
+
+
+
+
+     
+      
+
+
+
+

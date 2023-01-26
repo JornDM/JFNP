@@ -23,6 +23,7 @@
       - vim
       - python3-pip
       - mkpasswd
+      - bind-utils
       state: latest
       
 

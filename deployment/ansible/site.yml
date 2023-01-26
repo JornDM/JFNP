@@ -92,6 +92,13 @@
           login_user: root
           login_password: test123
           host: "%"
+    
+    # Creates a new, empty database called 'Plants'
+    - name: Create a new database 'Plants'
+      mysql_db:
+        name: Plants
+        state: present 
+
 
 
     

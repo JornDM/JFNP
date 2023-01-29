@@ -129,7 +129,7 @@
     - name: Creating backup for database 'Plants'
       shell: /vagrant/scripts/mariadb_backup.sh
 
-- hosts: dns-dhcp
+- hosts: router
   become: yes
   roles: []
   tasks:
@@ -148,13 +148,13 @@
     # Configure DNSmasq to be able to do forward dns lookups and as a DHCP server
     - name: Configure DNSmasq using configfile (As a DNS Server and DHCP Server)
       copy:
-        src: /vagrant/configfiles/dns-dhcp/dnsmasq.conf
+        src: /vagrant/configfiles/router/dnsmasq.conf
         dest: /etc/dnsmasq.conf 
       
     # Configure DNSmasq to be able to do reverse dns lookups
     - name: Configure DNSmasq to be able to execute reverse lookups
       copy:
-        src: /vagrant/configfiles/dns-dhcp/192.168.10.rev
+        src: /vagrant/configfiles/router/192.168.10.rev
         dest: /etc/192.168.10.rev
 
     # (Re)starting DNS server 

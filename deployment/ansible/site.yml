@@ -34,12 +34,12 @@
       - bind-utils
       state: latest
 
-  # Changes the DNS Server entry in /etc/resolv.conf to '192.168.10.3'
-  - name: Changing DNS Server in /etc/resolv.conf on every server
-    replace:
-      path: /etc/resolv.conf
-      regexp: '10.0.2.3'
-      replace: '192.168.10.3'
+  # # Changes the DNS Server entry in /etc/resolv.conf to '192.168.10.3'
+  # - name: Changing DNS Server in /etc/resolv.conf on every server
+  #   replace:
+  #     path: /etc/resolv.conf
+  #     regexp: '10.0.2.3'
+  #     replace: '192.168.10.3'
 
 
 # Start Configuring Host 'db'
@@ -163,7 +163,49 @@
         name: dnsmasq
         state: restarted
         enabled: yes 
+
+    - name: Install iptables
+      package:
+        name: iptables-services
+        state: present
       
+    - name: Configure iptables for NAT
+      iptables:
+        chain: POSTROUTING
+        jump: MASQUERADE
+        table: nat 
+        source: "{{ ansible_default_ipv4.network }}"
+        state: present 
+    
+    - name: Enable IP Forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        state: present
+        value: 1 
+        sysctl_set: yes 
+    
+    - name: Create the NAT config file
+      file:
+        path: /etc/sysctl.d/99-nat-router.conf
+        state: touch 
+
+    - name: Make the config fle nat router config file 
+      lineinfile:
+        dest: /etc/sysctl.d/99-nat-router.conf
+        line: "net.ipv4.ip_forward = 1"
+        state: present
+
+    - name: Allow DNS and DHCP services
+      firewalld:
+        permanent: yes 
+        immediate: yes
+        service: "{{ item }}"
+        state: enabled
+      with_items:
+        - dns 
+        - dhcp
+
+          
     
     
     

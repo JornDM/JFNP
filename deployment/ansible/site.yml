@@ -75,7 +75,7 @@
     # creates .my.cnf config file for root db user
     - name: Create '/root/.my.cnf' for root db user
       copy:
-        src: /vagrant/configfiles/.my.cnf
+        src: /vagrant/configfiles/db/.my.cnf
         dest: /root/.my.cnf
 
     # Configures a password for the root user
@@ -97,7 +97,23 @@
     - name: Create a new database 'Plants'
       mysql_db:
         name: Plants
-        state: present 
+        state: present
+
+    # Fills the empty database with data about different plants, prices, etc. 
+    - name: Fill database 'Plants' with data using plants.sql script
+      shell: mysql -ujeff -ptest123 Plants < /vagrant/configfiles/db/plants.sql
+
+    # Create directory db_backups to store different version of database backups in
+    - name: Create directory db_backups
+      ansible.builtin.file:
+        path: /home/vagrant/db_backups 
+        state: directory 
+        mode: '0755'
+
+    # Create backup of the data inside the database 'Plants'
+    - name: Creating backup for database 'Plants'
+      shell: /vagrant/scripts/mariadb_backup.sh
+
 
 
 

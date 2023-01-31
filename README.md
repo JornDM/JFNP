@@ -10,7 +10,18 @@ This project has the following servers/machines:
 1. A database server   
   * name: Alpha (VM-name: db)
   * type of database service: mariadb 
-2. A monitoring server
+
+2. A router 
+  * name: Beta (VM-name: router)
+  * Has **DNS** and **DHCP** service through `dnsmasq`.
+  * Also works as a **NAT router** through `iptables`.
+
+3. A webserver
+  * name: Gamma (VM-name: web)
+  * type of webserver: Nginx
+
+
+4. A monitoring server
   * name: Beta (VM-name: monitoring)
   * Runs Prometheus and Grafana 
   * Will Scrape the following data:

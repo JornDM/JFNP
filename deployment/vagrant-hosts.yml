@@ -7,16 +7,24 @@
 - name: db
   ip: 192.168.10.2
   netmask: 255.255.255.0
-  memory: 1024
+  memory: 512
   box: bento/almalinux-9
   intnet: false 
   
 - name: router
   ip: 192.168.10.3
   netmaks: 255.255.255.0
+  memory: 1024
+  box: bento/almalinux-9
+  intnet: false
+
+- name: web
+  ip: 192.168.10.4
+  netmask: 255.255.255.0
   memory: 512
   box: bento/almalinux-9
   intnet: false
+  
   
 # Example of a more elaborate host definition
 # - name: srv002

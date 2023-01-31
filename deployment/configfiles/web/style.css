@@ -1,0 +1,27 @@
+/* Small but subtile css ;) */
+
+button:hover {
+    color: aqua;
+}
+
+body {
+    background-color: black;
+}
+
+h1 {
+    color: white
+}
+
+p {
+    color: aliceblue;
+}
+
+#hidden {
+    display: none;
+    color: greenyellow;
+}
+
+#hidden2 {
+    display: none;
+    color: red;
+}

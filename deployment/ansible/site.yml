@@ -41,8 +41,9 @@
   #     regexp: '10.0.2.3'
   #     replace: '192.168.10.3'
 
-
-# Start Configuring Host 'db'
+# ----------------------------
+#   Start configuration db
+# ----------------------------
 - hosts: db
   become: yes 
   roles: []
@@ -52,9 +53,7 @@
       ansible.builtin.hostname: 
         name: Alpha
 
-# -------------------------
-#       DATABASE
-# -------------------------
+
     # Opens port 3306 so that we can connect to the database using software like MySQL Workbench
     - name: Open port 3306 for database connection
       firewalld: 
@@ -140,6 +139,9 @@
         job: vagrant/scripts/mariadb_backup.sh
         become: yes 
 
+# ------------------------------
+#   Start Configuration router
+# ------------------------------
 - hosts: router
   become: yes
   roles: []
@@ -222,7 +224,57 @@
         - dns 
         - dhcp
 
-          
+# -------------------------
+# Start Configuration WEB
+# -------------------------
+- hosts: web 
+  become: yes 
+  roles: []
+  tasks:
+    # Changes hostname to 'Gamma'
+    - name: Changing hostname to 'Gamma'
+      ansible.builtin.hostname:
+        name: Gamma
+    
+    - name: Install Nginx service
+      yum:
+        name: nginx 
+        state: present
+
+    - name: Start Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: yes 
+    
+    - name: Copying custom webpage to /usr/share/nginx/html
+      copy:
+        src: /vagrant/configfiles/web/webpage
+        dest: /usr/share/nginx/html
+
+    - name: Copy Nginx config file
+      copy: 
+        src: /vagrant/configfiles/web/nginx.conf
+        dest: /etc/nginx/nginx.conf
+        owner: nginx
+        group: nginx 
+        mode: 0644
+    
+    - name: Reload the Nginx service (Reload != Restart!)
+      shell: nginx -s reload
+      become: yes 
+
+    - name: Open port 80 and 443 for web connection
+      firewalld: 
+        port: "{{ item }}/tcp"
+        permanent: true 
+        immediate: true 
+        state: enabled
+      become: true
+      with_items:
+        - 80
+        - 443 
+
     
     
     

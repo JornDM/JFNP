@@ -52,6 +52,9 @@
       ansible.builtin.hostname: 
         name: Alpha
 
+# -------------------------
+#       DATABASE
+# -------------------------
     # Opens port 3306 so that we can connect to the database using software like MySQL Workbench
     - name: Open port 3306 for database connection
       firewalld: 
@@ -128,6 +131,14 @@
     # Create backup of the data inside the database 'Plants'
     - name: Creating backup for database 'Plants'
       shell: /vagrant/scripts/mariadb_backup.sh
+
+    # Creates a cronjob that will make a backup for the database, every day at 4 AM.
+    - name: Create a backup every day at 4 AM
+      cron:
+        name: 'Create Backup'
+        hour: 4 
+        job: vagrant/scripts/mariadb_backup.sh
+        become: yes 
 
 - hosts: router
   become: yes

@@ -175,6 +175,9 @@
         name: dnsmasq
         state: restarted
         enabled: yes 
+    
+    - name: Make sure DNSmasq is started
+      shell: systemctl start dnsmasq
 
     # Installing services 'iptables' to provide NAT
     - name: Install iptables
@@ -236,33 +239,39 @@
       ansible.builtin.hostname:
         name: Gamma
     
-    - name: Install Nginx service
-      yum:
-        name: nginx 
+    - name: Install Apache Web Server
+      dnf: 
+        name: httpd
         state: present
-
-    - name: Start Nginx service
-      service:
-        name: nginx
+    
+    - name: Start Apache Web Server
+      service: 
+        name: httpd
         state: started
         enabled: yes 
     
-    - name: Copying custom webpage to /usr/share/nginx/html
+    - name: Copy the Apache Config File
       copy:
-        src: /vagrant/configfiles/web/webpage
-        dest: /usr/share/nginx/html
-
-    - name: Copy Nginx config file
-      copy: 
-        src: /vagrant/configfiles/web/nginx.conf
-        dest: /etc/nginx/nginx.conf
-        owner: nginx
-        group: nginx 
+        src: /vagrant/configfiles/web/httpd.conf
+        dest: /etc/httpd/conf/httpd.conf
+        owner: root
+        group: root
         mode: 0644
     
-    - name: Reload the Nginx service (Reload != Restart!)
-      shell: nginx -s reload
-      become: yes 
+    - name: Copy over the configfiles to /var/www/html/
+      copy:
+        src: "/vagrant/configfiles/web/webpage/{{ item }}"
+        dest: "/var/www/html/"
+        owner: apache
+        group: apache
+        mode: 0644
+      with_items:
+        - index.html
+        - style.css
+        - script.js
+
+    - name: Restart Apache Web Server
+      shell: systemctl restart httpd
 
     - name: Open port 80 and 443 for web connection
       firewalld: 

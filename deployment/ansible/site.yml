@@ -281,7 +281,16 @@
         - 80
         - 443 
 
-    
+# -------------------------
+# Start Configuration WEB
+# -------------------------
+- hosts: monitor
+  become: yes 
+  roles: []
+  tasks:
+    - name: Changing hostname to 'Delta'
+      ansible.builtin.hostname:
+        name: Delta
     
     
 

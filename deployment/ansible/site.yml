@@ -137,7 +137,6 @@
         name: 'Create Backup'
         hour: 4 
         job: vagrant/scripts/mariadb_backup.sh
-        become: yes 
 
 # ------------------------------
 #   Start Configuration router
@@ -267,8 +266,6 @@
         mode: 0644
       with_items:
         - index.html
-        - style.css
-        - script.js
 
     - name: Restart Apache Web Server
       shell: systemctl restart httpd

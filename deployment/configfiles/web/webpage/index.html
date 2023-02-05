@@ -5,7 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JFNP WebPage</title>
-    <link rel="stylesheet" href="/var/www/html/style.css">
 </head>
 <body>
     <h1>Welcome to the JFNP Webpage!</h1>
@@ -14,6 +13,58 @@
     <p>Your count = 0</p>
     <p id="hidden">WOW! What a high count!!</p>
     <p id="hidden2">STOP!! YOU WILL CRASH THE SYSTEM!!!!!</p>
-    <script src="/var/www/html/script.js"></script>
+
+<!--    START CSS CODE   -->
+
+<style>
+/* Small but subtile css ;) */
+
+button:hover {
+    color: aqua;
+}
+
+body {
+    background-color: black;
+}
+
+h1 {
+    color: white
+}
+
+p {
+    color: yellow;
+}
+
+#hidden {
+    display: none;
+    color: greenyellow;
+}
+
+#hidden2 {
+    display: none;
+    color: red;
+}
+</style>
+
+
+<!--    START JAVASCRIPT CODE   -->
+
+<script>
+// Some simple JS
+
+const myButton = document.getElementById('knop');
+let count = 0;
+myButton.addEventListener('click', function() {
+count++;
+document.querySelectorAll('p')[1].innerHTML = `Your count = ${count}.`
+    if (count >= 20) {
+    document.getElementById('hidden').style.display = 'block';
+
+    if (count >= 50) {
+        document.getElementById('hidden2').style.display = 'block'
+    }
+}
+});
+</script>
 </body>
 </html>

@@ -54,15 +54,16 @@
       hostname: 
         name: Alpha
 
-
     # Opens port 3306 so that we can connect to the database using software like MySQL Workbench
-    - name: Open port 3306 for database connection
+    - name: Open port 3306 for database connection and port 9104 for database metrics
       firewalld: 
-        port: 3306/tcp
+        port: "{{ item }}/tcp"
         permanent: true 
         immediate: true 
         state: enabled
-      become: true 
+      with_items:
+        - 3306
+        - 9104
 
     # Configures firewall to allow the mysql service
     - name: Allow service mysql for database connection
@@ -138,6 +139,9 @@
         name: 'Create Backup'
         hour: 4 
         job: vagrant/scripts/mariadb_backup.sh
+
+    - name: Run the sqld_exporter.sh script
+      shell: /vagrant/scripts/sqld_exporter.sh
 
 # ------------------------------
 #   Start Configuration router
@@ -304,18 +308,25 @@
         name: jmespath
         state: present
 
-  # Start normal tasks here
-  tasks:
-    - name: Changing hostname to 'Delta'
-      hostname:
-        name: Delta
-
     - name: Install Useful Sotware 
       apt:
         name:
         - vim
         - firewalld
+        - curl
+        - gnupg-agent
+        - software-properties-common
+        - wget 
         state: present
+    
+    - name: Install curl
+      shell: sudo apt install -y curl 
+      
+  # Start normal tasks here
+  tasks:
+    - name: Changing hostname to 'Delta'
+      hostname:
+        name: Delta
 
     - name: Disable UFW (Default Ubuntu server firewall service)
       ufw:
@@ -335,36 +346,11 @@
       with_items:
       - 3000
       - 9090
-      - 9104
 
     - name: Copy the prometheus.yml to the correct location (already contains the correct content)
       copy:
         src: /vagrant/configfiles/monitor/prometheus.yml
         dest: /etc/prometheus
-      
-    - name: Copy the .my.cnf file to /root/ for mysqld exporter
-      copy:
-        src: /vagrant/configfiles/db/.my.cnf 
-        dest: /root/
-
-    - name: Run the sqld_exporter.sh script
-      shell: /vagrant/scripts/sqld_exporter.sh
-
-    - name: Copy over the mysql_exporter.service file to /etc/systemd/system 
-      copy:
-        src: /vagrant/configfiles/monitor/mysql_exporter.service
-        dest: /etc/systemd/system
-    
-    - name: Reload Systemd configuration
-      shell: systemctl daemon-reload
-      
-    - name: Enable and start the MySQL exporter service
-      service:
-        name: mysql_exporter
-        state: started
-        enabled: yes 
-
-
 
 
 

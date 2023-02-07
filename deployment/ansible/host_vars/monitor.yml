@@ -1,0 +1,12 @@
+# -----------------------
+#       Grafana
+# -----------------------
+
+# Creates a Grafana Administrator user 'Admin' for installation Grafana
+grafana_security:
+  admin_user: admin 
+  admin_password: admin 
+
+# -----------------------
+#       Prometheus
+# -----------------------

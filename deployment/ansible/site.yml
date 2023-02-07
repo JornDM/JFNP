@@ -1,7 +1,7 @@
 # site.yml
 ---
 # Start Configuring ALL hosts
-- hosts: all
+- hosts: almalinux
   become: yes 
   roles: []
   tasks:
@@ -25,14 +25,15 @@
     become: true 
 
   # Installs useful software like vim, pip, etc.
-  - name: Installing Useful Software 
-    ansible.builtin.dnf:
+  - name: Installing Useful Software (using dnf)
+    dnf:
       name: 
       - vim
       - python3-pip
       - mkpasswd
       - bind-utils
       state: latest
+    
 
   # # Changes the DNS Server entry in /etc/resolv.conf to '192.168.10.3'
   # - name: Changing DNS Server in /etc/resolv.conf on every server
@@ -50,7 +51,7 @@
   tasks:
     # Changes hostname to 'Alpha'
     - name: Changing hostname to 'Alpha'
-      ansible.builtin.hostname: 
+      hostname: 
         name: Alpha
 
 
@@ -86,7 +87,7 @@
       
     # Installs neccesary module for mariadb with pip 
     - name: Install python-mysqldb using pip
-      ansible.builtin.pip: 
+      pip: 
         name: PyMySQL
 
     # creates .my.cnf config file for root db user
@@ -122,7 +123,7 @@
 
     # Create directory db_backups to store different version of database backups in
     - name: Create directory db_backups
-      ansible.builtin.file:
+      file:
         path: /home/vagrant/db_backups 
         state: directory 
         mode: '0755'
@@ -147,7 +148,7 @@
   tasks:
     # Changes hostname to 'Beta'
     - name: Changing hostname to 'Beta'
-      ansible.builtin.hostname:
+      hostname:
         name: Beta
       
     # Install DNSmasq service that will work as a dns and dhcp server  
@@ -235,7 +236,7 @@
   tasks:
     # Changes hostname to 'Gamma'
     - name: Changing hostname to 'Gamma'
-      ansible.builtin.hostname:
+      hostname:
         name: Gamma
     
     - name: Install Apache Web Server
@@ -281,18 +282,89 @@
         - 80
         - 443 
 
-# -------------------------
-# Start Configuration WEB
-# -------------------------
+# ------------------------------
+# Start Configuration MONITOR
+# ------------------------------
 - hosts: monitor
   become: yes 
-  roles: []
+  roles: [cloudalchemy.grafana, cloudalchemy.prometheus]
+
+# Used pretask here so that the install of Grafana/Prometheus doesn't fail because of Jmespath missing 
+  pre_tasks:
+  
+    # Installs Python 'pip' so we can install Jmespath in the next step. This is a necessary module for Grafana and Prometheus
+    - name: Install Python package manager 'pip' 
+      apt:
+        name: python3-pip
+        state: present
+
+   # Install Jmespath. This is a needed module for Grafana and Prometheus
+    - name: Install Jmespath for Grafana and Prometheus
+      pip:
+        name: jmespath
+        state: present
+
+  # Start normal tasks here
   tasks:
     - name: Changing hostname to 'Delta'
-      ansible.builtin.hostname:
+      hostname:
         name: Delta
+
+    - name: Install Useful Sotware 
+      apt:
+        name:
+        - vim
+        - firewalld
+        state: present
+
+    - name: Disable UFW (Default Ubuntu server firewall service)
+      ufw:
+        state: disabled
+
+    - name: Stop UFW (Default Ubuntu server firewall service)
+      systemd:
+        name: ufw
+        state: stopped
+
+    - name: Configure allowed ports for firewall
+      firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true 
+        immediate: true
+        state: enabled
+      with_items:
+      - 3000
+      - 9090
+      - 9104
+
+    - name: Copy the prometheus.yml to the correct location (already contains the correct content)
+      copy:
+        src: /vagrant/configfiles/monitor/prometheus.yml
+        dest: /etc/prometheus
+      
+    - name: Copy the .my.cnf file to /root/ for mysqld exporter
+      copy:
+        src: /vagrant/configfiles/db/.my.cnf 
+        dest: /root/
+
+    - name: Run the sqld_exporter.sh script
+      shell: /vagrant/scripts/sqld_exporter.sh
+
+    - name: Copy over the mysql_exporter.service file to /etc/systemd/system 
+      copy:
+        src: /vagrant/configfiles/monitor/mysql_exporter.service
+        dest: /etc/systemd/system
     
-    
+    - name: Reload Systemd configuration
+      shell: systemctl daemon-reload
+      
+    - name: Enable and start the MySQL exporter service
+      service:
+        name: mysql_exporter
+        state: started
+        enabled: yes 
+
+
 
 
 

@@ -12,6 +12,15 @@ function printStep() {
      stepcount=$((stepcount + 1))
 }
 
+function printOverview() {
+    echo '============ OVERVIEW ============'
+    echo "Downloaded repo from github:                  $(if [ $downloadflag -eq 1 ]; then echo "Yes"; else echo "No"; fi)"
+    echo "Extracted files:                              $(if [ $extractFlag -eq 1 ]; then echo "Yes"; else echo "No"; fi)"
+    echo "Moved extracted dir to /usr/local/bin:        $(if [ $movedFlag -eq 1 ]; then echo "Yes"; else echo "No"; fi)"      
+    echo "Changed file permissions                      $(if [ $permissionFlag -eq 1 ]; then echo "Yes"; else echo "No"; fi)"
+    echo "Started the exporter                          $(if [ $runFlag -eq 1 ]; then echo "Yes"; else echo "No"; fi)"
+}
+
 # 1. Download exporter from GitHub
 printStep
 echo 'Checking wether the directory is already available on the system'
@@ -75,3 +84,4 @@ else
     runFlag=0
 fi 
 
+printOverview 

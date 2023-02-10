@@ -1,5 +1,15 @@
 # site.yml
 ---
+- hosts: all 
+  become: yes 
+  roles: []
+  tasks: 
+  - name: Create a directory /home/root/
+    file:
+      path: /home/root
+      state: directory
+      mode: '0755'
+
 # Start Configuring ALL hosts
 - hosts: almalinux
   become: yes 
@@ -275,7 +285,7 @@
     - name: Restart Apache Web Server
       shell: systemctl restart httpd
 
-    - name: Open port 80 and 443 for web connection
+    - name: Open port 80 and 443 for web connection and 9117 for exporter
       firewalld: 
         port: "{{ item }}/tcp"
         permanent: true 
@@ -285,6 +295,12 @@
       with_items:
         - 80
         - 443 
+        - 9117
+
+    - name: Copy the apache_exporter.service file to /etc/system directory
+      copy:
+        src: /vagrant/configfiles/monitor/apache_exporter.service
+        dest: /etc/systemd/system 
 
 # ------------------------------
 # Start Configuration MONITOR
@@ -351,6 +367,10 @@
       copy:
         src: /vagrant/configfiles/monitor/prometheus.yml
         dest: /etc/prometheus
+
+    - name: Copy all the .json files for dashboards to the correct location 
+      shell: cp /vagrant/configfiles/monitor/dashboards/* /var/lib/grafana/dashboards/
+
 
 
 

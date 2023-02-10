@@ -58,11 +58,21 @@
 - hosts: db
   become: yes 
   roles: []
+  pre_tasks:
+    - name: Install Python package manager 'pip'
+      dnf:
+        name: python3-pip
+        state: present
+
   tasks:
     # Changes hostname to 'Alpha'
     - name: Changing hostname to 'Alpha'
       hostname: 
         name: Alpha
+    
+    # Starts firewall from shell to make sure it is running. Also enables the service.
+    - name: Make sure firewall is started
+      shell: systemctl start firewalld ; systemctl enable firewalld
 
     # Opens port 3306 so that we can connect to the database using software like MySQL Workbench
     - name: Open port 3306 for database connection and port 9104 for database metrics
@@ -230,6 +240,9 @@
         line: "net.ipv4.ip_forward = 1"
         state: present
 
+    - name: Make sure firewall is started
+      shell: systemctl start firewalld ; systemctl enable firewalld
+      
     # Configures firewall to  allow the DNS and DHCP service 
     - name: Allow DNS and DHCP services
       firewalld:
@@ -285,6 +298,9 @@
     - name: Restart Apache Web Server
       shell: systemctl restart httpd
 
+    - name: Make sure firewall is started
+      shell: systemctl start firewalld ; systemctl enable firewalld
+
     - name: Open port 80 and 443 for web connection and 9117 for exporter
       firewalld: 
         port: "{{ item }}/tcp"
@@ -302,6 +318,8 @@
         src: /vagrant/configfiles/monitor/apache_exporter.service
         dest: /etc/systemd/system 
 
+    - name: Run the script to install apache exporter and create service for it 
+      shell: /vagrant/scripts/apache_exporter.sh
 # ------------------------------
 # Start Configuration MONITOR
 # ------------------------------
@@ -353,6 +371,9 @@
         name: ufw
         state: stopped
 
+    - name: Make sure firewall is started
+      shell: systemctl start firewalld ; systemctl enable firewalld
+
     - name: Configure allowed ports for firewall
       firewalld:
         port: "{{ item }}/tcp"
@@ -368,8 +389,13 @@
         src: /vagrant/configfiles/monitor/prometheus.yml
         dest: /etc/prometheus
 
+    - name: Remove all "#" except first line (to enable Dashboard provisioning)
+      shell: sed -i '2,$ s/^#\s*//' /etc/grafana/provisioning/dashboards/sample.yaml  
+
     - name: Copy all the .json files for dashboards to the correct location 
       shell: cp /vagrant/configfiles/monitor/dashboards/* /var/lib/grafana/dashboards/
+
+    
 
 
 

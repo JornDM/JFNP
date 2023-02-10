@@ -31,7 +31,7 @@ if [ -e "/home/$user/apache_exporter-0.11.0.linux-amd64.tar.gz" ]; then
     downloadFlag=0
 else
     echo 'The directory is not yet on the system. Cloning is right now...'
-    curl -s https://api.github.com/repos/Lusitaniae/apache_exporter/releases/latest| grep browser_download_url| grep linux-amd64|cut -d '"' -f 4|wget -qi - -P /home/root/
+    curl -s https://api.github.com/repos/Lusitaniae/apache_exporter/releases/latest| grep browser_download_url| grep linux-amd64|cut -d '"' -f 4|wget -qi - -P /home/$user/
     downloadFlag=1
 fi 
 
@@ -43,7 +43,7 @@ if [ -e "/home/$user/apache_exporter-0.11.0.linux-amd64/" ]; then
 
 else 
     echo 'The directory has not yet been extracted. Doing it right now...'
-    tar xvf "/home/$user/apache_exporter-0.11.0.linux-amd64.tar.gz"
+    tar xvf "/home/$user/apache_exporter-0.11.0.linux-amd64.tar.gz" -C "/home/$user/"
     extractFlag=1
 fi 
 

@@ -388,13 +388,17 @@
       copy:
         src: /vagrant/configfiles/monitor/prometheus.yml
         dest: /etc/prometheus
-
+        
+   
     - name: Remove all "#" except first line (to enable Dashboard provisioning)
-      shell: sed -i '2,$ s/^#\s*//' /etc/grafana/provisioning/dashboards/sample.yml  
+      shell: sed '2,$ s/^# //' /etc/grafana/provisioning/dashboards/sample.yaml | sed '4 s/^#//' > /etc/grafana/provisioning/dashboards/sample.yaml.tmp && mv /etc/grafana/provisioning/dashboards/sample.yaml.tmp /etc/grafana/provisioning/dashboards/sample.yaml
 
     - name: Copy all the .json files for dashboards to the correct location 
       shell: cp /vagrant/configfiles/monitor/dashboards/* /var/lib/grafana/dashboards/
 
+    - name: Restart the grafana service
+      shell: systemctl restart grafana-server.service 
+    
     
 
 

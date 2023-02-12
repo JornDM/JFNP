@@ -258,6 +258,13 @@
         port: "9153/tcp"
         state: enabled
       become: yes 
+    
+    - name: Open port 53/udp for DNS 
+      firewalld:
+        permanent: true
+        immediate: true 
+        port: "53/udp"
+        state: enabled
 
 
     - name: Start and enable dnsmasq service

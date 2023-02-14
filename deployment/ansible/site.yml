@@ -13,7 +13,7 @@
 # Start Configuring ALL hosts
 - hosts: almalinux
   become: yes 
-  roles: []
+  roles: ['cloudalchemy.node_exporter']
   tasks:
 
   # Starts and enables firewalld service 
@@ -67,7 +67,7 @@
       shell: systemctl start firewalld ; systemctl enable firewalld
 
     # Opens port 3306 so that we can connect to the database using software like MySQL Workbench
-    - name: Open port 3306 for database connection and port 9104 for database metrics
+    - name: Open port 3306 for database connection, port 9104 for database metrics and port 9100 for node exporter
       firewalld: 
         port: "{{ item }}/tcp"
         permanent: true 
@@ -76,6 +76,7 @@
       with_items:
         - 3306
         - 9104
+        - 9100
 
     # Configures firewall to allow the mysql service
     - name: Allow service mysql for database connection
@@ -255,8 +256,11 @@
       firewalld:
         permanent: true 
         immediate: true 
-        port: "9153/tcp"
+        port: "{{ item }}/tcp"
         state: enabled
+      with_items: 
+        - 9153
+        - 9100
       become: yes 
     
     - name: Open port 53/udp for DNS 
@@ -331,6 +335,7 @@
         - 80
         - 443 
         - 9117
+        - 9100
 
     - name: Copy the apache_exporter.service file to /etc/system directory
       copy:
@@ -402,6 +407,7 @@
       with_items:
       - 3000
       - 9090
+      - 9100
 
     - name: Copy the prometheus.yml to the correct location (already contains the correct content)
       copy:

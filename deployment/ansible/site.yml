@@ -35,6 +35,25 @@
       - mkpasswd
       - bind-utils
       state: latest
+  
+  - name: Install Chrony package
+    dnf:
+      name: chrony
+      state: present
+    
+  - name: Configure Chrony for clients
+    command: echo /vagrant/configfiles/router/chrony_client.conf > /etc/chrony.conf
+  
+  - name: Ensure the Chrony service is started and enabled
+    service:
+      name: chronyd
+      state: started
+      enabled: yes
+
+  - name: Restart Chrony
+    service:
+      name: chronyd 
+      state: restarted 
     
 
   # # Changes the DNS Server entry in /etc/resolv.conf to '192.168.10.3'
@@ -155,7 +174,6 @@
 
     - name: Run the sqld_exporter.sh script
       shell: /vagrant/scripts/sqld_exporter.sh
-
 # ------------------------------
 #   Start Configuration router
 # ------------------------------
@@ -276,6 +294,32 @@
 
     - name: Create dnsmasq_exporter and run it inside a docker container 
       shell: /vagrant/scripts/dnsmasq_exporter.sh
+
+    - name: Install NTP Packages
+      yum:
+        name: chrony 
+        state: present 
+    
+    # Start configuration NTP server! 
+    - name: Configure NTP server 
+      copy:
+        src: /vagrant/configfiles/router/chrony.conf
+        dest: /etc/chrony.conf
+    
+    - name: Ensure the Chrony service is started and enabled
+      service:
+        name: chronyd
+        state: started
+        enabled: yes 
+
+    - name: Restart NTP 
+      service:
+        name: chronyd 
+        state: restarted 
+    
+    - name: Set timezone to Europe/Brussels
+      command: timedatectl set-timezone Europe/Brussels
+
 
 # -------------------------
 # Start Configuration WEB

@@ -5,6 +5,8 @@ Feel free to use the code that I wrote in your own projects! And give this proje
 The hostname of all the VM's are the names of the letters in the Latin Alphabet. 
 All the VM's are in the ``192.168.10.0/24`` network and are connected with eachother using a **Host-Only Adapter**.  
 
+_Note: This project is something I work on during my free-time! I try to make changes to this project at least weekly, but I can't promise this._
+
 ## Contents 
 This project has the following servers/machines:
 1. A database server   

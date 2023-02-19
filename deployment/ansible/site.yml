@@ -42,7 +42,9 @@
       state: present
     
   - name: Configure Chrony for clients
-    command: echo /vagrant/configfiles/router/chrony_client.conf > /etc/chrony.conf
+    copy:
+      src: /vagrant/configfiles/router/chrony_client.conf
+      dest: /etc/chrony.conf
   
   - name: Ensure the Chrony service is started and enabled
     service:
@@ -281,13 +283,16 @@
         - 9100
       become: yes 
     
-    - name: Open port 53/udp for DNS 
+    - name: Open port 53/udp for DNS and port 123/udp for NTP 
       firewalld:
         permanent: true
         immediate: true 
-        port: "53/udp"
+        port: "{{ item }}/udp"
         state: enabled
-
+      with_items:
+        - 53 
+        - 123 
+  
 
     - name: Start and enable dnsmasq service
       shell: systemctl start dnsmasq ; systemctl enable dnsmasq

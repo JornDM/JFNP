@@ -11,6 +11,9 @@ backupdir_path=/home/vagrant/db_backups
 db_name='Plants'
 backup_name="$db_name-$currentDate"
 full_path=$backupdir_path/"$backup_name"
+up_flag=$(ping -w 4 192.168.10.3 | grep '4 packets transmitted, 4 received, 0% packet loss')
+latest_backup=$(ls /home/vagrant/db_backups | tail -1)
+
 
 # Functions
 function create-backup {
@@ -20,27 +23,33 @@ function create-backup {
     gzip "$full_path"
 
     echo "Done! Your backup has been created at $backupdir_path" 
-    exit 0
 }
 
+# This function will send the backup to another server (probably 192.168.10.3) 
 function forward-backup {
-    # This function will send the backup to another server (probably 192.168.10.3)
-    pass 
+    if [ -z "$up_flag" ];
+    then 
+        echo 'There is something not right with the router VM. Ping was not 100% successful so there was no backup transfered...'
+    else 
+        echo 'The ping test was successful! It is possible to forward the backup to the router.'
+        echo "Currently, the latest backup is ${latest_backup}. This backup will be forwarded!"
+        echo 'Forwarding it right now...'
+        sshpass -p vagrant scp -o StrictHostKeyChecking=no "/home/vagrant/db_backups/$latest_backup" vagrant@192.168.10.3:/home/vagrant 
+    fi
 }
 
-# Start Script
+# Check if the backup directory exists
 if [ ! -d "$backupdir_path" ]; then 
     echo 'The location you provided to store the backup could not be found...'
-    exit 1
 else 
+    # Check if the backup already exists
+    if [ -d "$backupdir_path/$db_name" ]; then 
+        echo "This backup already exists in $backupdir_path"
+    else 
+        # Call the create-backup function
+        create-backup
 
-if [ -d "$backupdir_path/$db_name" ]; then 
-    echo "This backup already exists in $backupdir_path"
-    exit 1 
-else 
-    # Calling function that will create the backup
-    create-backup
+        # Call the forward-backup function
+        forward-backup
+    fi 
 fi 
-fi 
-
-# End Script
